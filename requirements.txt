@@ -1,0 +1,5 @@
+#python 3.10
+alive-progress
+numpy
+opencv-python
+matplotlib
