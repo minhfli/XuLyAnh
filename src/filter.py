@@ -123,6 +123,13 @@ def get_starting_point_v2(image, alpha=0.5, kernel_size=11):
 
 
 def edge_preserve_filter_v2(image, alpha=0.5, kernel_size=11):
+    """
+    edge_preserve_filter_v1 calculate weight for all pixel of the image,
+    since the weight is close to 0 as the distance is far from the current pixel
+    v2 compute weight for only the pixels close to the current pixel
+
+    """
+
     height, width = image.shape[:2]
     filtered_image = np.zeros((height, width))
     half_kernel = kernel_size // 2
