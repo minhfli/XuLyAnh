@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import matplotlib.axes
 
-fig, axs = plt.subplots(3, 5)
+fig, axs = plt.subplots(3, 5, figsize=(16, 9))
 
 
 def set_subplot(rows, cols):

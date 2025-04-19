@@ -3,3 +3,4 @@ alive-progress
 numpy
 opencv-python
 matplotlib
+pickle

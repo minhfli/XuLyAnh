@@ -4,12 +4,14 @@ import matplotlib
 import matplotlib.axes
 import numpy as np
 import matplotlib.pyplot as plt
+import pickle
+import matplotlib.pyplot as plt
 
 from filter import *
 from plot_helper import *
 
 
-image_path = "./assets/Lena_noisy.jpeg"
+image_path = "./assets/label/100label/ADNI_002_S_0295_13722_ACPC/ADNI_002_S_0295_13722_L/ADNI_002_S_0295_13722_L_001.jpg"
 image_name = image_path.split("/")[-1]
 output_path = "./output/" + image_name
 
@@ -57,8 +59,13 @@ lower = m - 2.5 * v
 upper = m + 2.5 * v
 # Io_clipped = np.clip(Image_o, lower, upper)
 Io_rescaled = (Image_o - lower) / (upper - lower)
-plot_img(axs[2, 2], Io_rescaled, "Step 6", cmap=plt.get_cmap("gray"))
+plot_img(axs[2, 2], Io_rescaled, "Step 6: Rescaled", cmap=plt.get_cmap("gray"))
+Io_clipped = np.clip(Io_rescaled, lower, upper)
+plot_img(
+    axs[2, 2], Io_rescaled, "Step 6: Rescaled and clipped", cmap=plt.get_cmap("gray")
+)
 
 plt.tight_layout()
 plt.show()
-plt.savefig(output_path)
+pickle.dump(fig, open(output_path + ".pickle", "wb"))
+fig.savefig(output_path + ".png")
