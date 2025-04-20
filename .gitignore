@@ -1,2 +1,3 @@
 output/*.pickle
 output/*.pdf
+output/*
