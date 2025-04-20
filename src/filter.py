@@ -155,14 +155,6 @@ def cluster_filter_v2(image, alpha=0.5, beta=None, kernel_size=11):
                 weight = compute_weight_patch(
                     i, j, min_x, max_x, min_y, max_y, alpha=alpha
                 )
-                # mean = np.sum(patch * weight) / np.sum(weight)
-                # var2 = np.sum((patch - mean) ** 2 * weight) / np.sum(weight)
-                # if var2 < 0.00001:
-                #     beta = 1
-                # else:
-                #     beta = 1 / (2 * var2)
-                #     if beta > 1:
-                #         beta = 1
 
                 tuso = np.sum(
                     patch * weight * np.exp(-beta[i, j] * (patch - image[i, j]) ** 2)
@@ -280,4 +272,4 @@ def edge_preserve_filter(image, k=5, alpha=0.5, kernel_size=11):
         vmin=None,
         vmax=None,
     )
-    return filtered_image
+    return Image_o

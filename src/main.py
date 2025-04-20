@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 
 from filter import *
 from plot_helper import *
+from filter_rgb import *
 
 """
 change here
@@ -22,24 +23,30 @@ change here
 image_path = "./assets/MRI/Test.jpg"
 image_name = image_path.split("/")[-1]
 output_path = "./output/" + image_name
+alpha = 0.5
+k = 1  #! k is 5 in the original paper
+
+rgb_mode = True
+if rgb_mode == False:
+    image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
+    image_gray = image
+    plot_img(axs[0, 0], image, "Original Image (grayscale but shown in RGB)")
+    plot_img(axs[0, 1], image_gray, "Grayscale Image", cmap=plt.get_cmap("gray"))
+    plot_img(axs2[0], image_gray, "Grayscale Image", cmap=plt.get_cmap("gray"))
+
+    filtered_image = edge_preserve_filter(image_gray, k=k, alpha=alpha, kernel_size=11)
+else:
+    image = cv2.imread(image_path)
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    image_gray = grayscale(image)
+    plot_img(axs[0, 0], image, "Original Image")
+    plot_img(axs[0, 1], image_gray, "Grayscale Image", cmap=plt.get_cmap("gray"))
+    edge_preserve_filter_rgb(image, image_gray, k=k, alpha=alpha, kernel_size=11)
 
 
-# image = cv2.imread(image_path)
-# image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-# image_gray = grayscale(image)
-
-image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
-image_gray = image
 # print(np.max(image_gray))
 # print(np.min(image_gray))
 
-plot_img(axs[0, 0], image, "Original Image (grayscale but shown in RGB)")
-plot_img(axs[0, 1], image_gray, "Grayscale Image", cmap=plt.get_cmap("gray"))
-plot_img(axs2[0], image_gray, "Grayscale Image", cmap=plt.get_cmap("gray"))
-
-alpha = 0.5
-k = 5  #! k is 5 in the original paper
-filtered_image = edge_preserve_filter(image_gray, k=k, alpha=alpha, kernel_size=11)
 
 plt.tight_layout()
 plt.show()
