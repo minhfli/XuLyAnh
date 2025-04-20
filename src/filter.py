@@ -13,7 +13,7 @@ from plot_helper import plot_img, axs
 
 
 def grayscale(image):
-    return np.dot(image[..., :3], [0.299, 0.587, 0.114])
+    return np.dot(image[..., :3], [0.289, 0.587, 0.114])
 
 
 def compute_distance(x_i, y_i, x, y):
@@ -71,7 +71,7 @@ def compute_exp_beta(omega_array, y_omega_array, image, current_pixel):
     return _exp
 
 
-def edge_preseve_fiter(image, alpha=0.5):
+def cluster_filter_v1(image, alpha=0.5):
 
     height = image.shape[0]
     width = image.shape[1]
@@ -103,6 +103,7 @@ def compute_weight_patch(x, y, min_x, max_x, min_y, max_y, alpha=0.5):
 def get_starting_point_v2(image, alpha=0.5, kernel_size=11):
     height, width = image.shape[:2]
     filtered_image = np.zeros((height, width))
+    beta = np.zeros((height, width))
     half_kernel = kernel_size // 2
 
     with alive_bar(height * width, title="Computing y0") as bar:
@@ -116,13 +117,22 @@ def get_starting_point_v2(image, alpha=0.5, kernel_size=11):
                 weight = compute_weight_patch(
                     i, j, min_x, max_x, min_y, max_y, alpha=alpha
                 )
+                mean = np.sum(patch * weight) / np.sum(weight)
+                var2 = np.sum((patch - mean) ** 2 * weight) / np.sum(weight)
+                if var2 < 0.00001:
+                    beta[i, j] = 1
+                else:
+                    beta[i, j] = 1 / (2 * var2)
+                    if beta[i, j] > 1:
+                        beta[i, j] = 1
+
                 filtered_image[i, j] = np.sum(patch * weight) / np.sum(weight)
                 bar()
 
-    return filtered_image
+    return filtered_image, beta
 
 
-def edge_preserve_filter_v2(image, alpha=0.5, kernel_size=11):
+def cluster_filter_v2(image, alpha=0.5, beta=None, kernel_size=11):
     """
     edge_preserve_filter_v1 calculate weight for all pixel of the image,
     since the weight is close to 0 as the distance is far from the current pixel
@@ -145,19 +155,21 @@ def edge_preserve_filter_v2(image, alpha=0.5, kernel_size=11):
                 weight = compute_weight_patch(
                     i, j, min_x, max_x, min_y, max_y, alpha=alpha
                 )
-                mean = np.sum(patch * weight) / np.sum(weight)
-                var2 = np.sum((patch - mean) ** 2 * weight) / np.sum(weight)
-                if var2 < 0.00001:
-                    beta = 1
-                else:
-                    beta = 1 / (2 * var2)
-                    if beta > 1:
-                        beta = 1
+                # mean = np.sum(patch * weight) / np.sum(weight)
+                # var2 = np.sum((patch - mean) ** 2 * weight) / np.sum(weight)
+                # if var2 < 0.00001:
+                #     beta = 1
+                # else:
+                #     beta = 1 / (2 * var2)
+                #     if beta > 1:
+                #         beta = 1
 
                 tuso = np.sum(
-                    patch * weight * np.exp(-beta * (patch - image[i, j]) ** 2)
+                    patch * weight * np.exp(-beta[i, j] * (patch - image[i, j]) ** 2)
                 )
-                mauso = np.sum(weight * np.exp(-beta * (patch - image[i, j]) ** 2))
+                mauso = np.sum(
+                    weight * np.exp(-beta[i, j] * (patch - image[i, j]) ** 2)
+                )
                 filtered_image[i, j] = tuso / mauso
                 bar()
     return filtered_image
@@ -183,3 +195,81 @@ def compute_local_mean_var(image, kernel_size=40):
                 local_var[i, j] = np.var(patch)
                 bar()
     return local_mean, local_var
+
+
+def edge_preserve_filter(image, k=5, alpha=0.5, kernel_size=11):
+
+    filtered_image = image
+    for i in range(k):
+        starting_image, beta = get_starting_point_v2(
+            filtered_image, alpha, kernel_size=kernel_size
+        )
+        # plot_img(axs[0, 2], starting_image, "Starting Image", cmap=plt.get_cmap("gray"))
+        filtered_image = cluster_filter_v2(
+            starting_image, alpha, beta, kernel_size=kernel_size
+        )
+        if i == 0:
+            plot_img(
+                axs[1, 0],
+                filtered_image,
+                f"Step 1: Filtered Image, k=1",
+                cmap=plt.get_cmap("gray"),
+            )
+
+    plot_img(
+        axs[1, 1],
+        filtered_image,
+        f"Step 1: Filtered Image, k={k}",
+        cmap=plt.get_cmap("gray"),
+    )
+
+    Image_i = filtered_image
+    Image_d = image - Image_i  # signal difference
+    plot_img(
+        axs[1, 2],
+        Image_d,
+        "Step2: Signal Difference",
+        cmap=plt.get_cmap("gray"),
+        vmin=None,
+        vmax=None,
+    )
+
+    M, V = compute_local_mean_var(Image_d)
+    plot_img(
+        axs[1, 3], M, "Local Mean", cmap=plt.get_cmap("gray"), vmin=None, vmax=None
+    )
+    plot_img(
+        axs[1, 4], V, "Local Variance", cmap=plt.get_cmap("gray"), vmin=None, vmax=None
+    )
+
+    threshold = V * 2.5
+    Image_m = np.where(np.abs(Image_d - M) < threshold, Image_i, image)
+    plot_img(axs[2, 0], Image_m, "Step 3: Thresholded image", cmap=plt.get_cmap("gray"))
+
+    s = 0.5
+    Image_o = image - s * Image_m
+    plot_img(axs[2, 1], Image_o, "Step 5", cmap=plt.get_cmap("gray"))
+
+    m = np.mean(Image_o)
+    v = np.var(Image_o, mean=m)
+    lower = m - 2.5 * v
+    upper = m + 2.5 * v
+    Io_rescaled = (Image_o - lower) / (upper - lower)
+    plot_img(
+        axs[2, 2],
+        Io_rescaled,
+        "Step 6: Rescale from m-2.5v to m+2.5v",
+        cmap=plt.get_cmap("gray"),
+        vmin=0,
+        vmax=1,
+    )
+
+    plot_img(
+        axs[2, 3],
+        Image_o,
+        "Step 6: Auto rescaled",
+        cmap=plt.get_cmap("gray"),
+        vmin=None,
+        vmax=None,
+    )
+    return filtered_image

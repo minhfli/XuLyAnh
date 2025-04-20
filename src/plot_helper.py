@@ -9,7 +9,7 @@ def set_subplot(rows, cols):
     fig, axs = plt.subplots(rows, cols)
 
 
-def plot_img(ax: matplotlib.axes.Axes, img, title, cmap=None):
-    ax.imshow(img, cmap=cmap)
+def plot_img(ax: matplotlib.axes.Axes, img, title, cmap=None, vmin=0, vmax=255):
+    ax.imshow(img, cmap=cmap, vmin=vmin, vmax=vmax)
     ax.set_title(title)
     ax.axis("off")
