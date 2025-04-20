@@ -26,7 +26,7 @@ output_path = "./output/" + image_name
 alpha = 0.5
 k = 1  #! k is 5 in the original paper
 
-rgb_mode = True
+rgb_mode = False
 if rgb_mode == False:
     image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
     image_gray = image
@@ -35,18 +35,13 @@ if rgb_mode == False:
     plot_img(axs2[0], image_gray, "Grayscale Image", cmap=plt.get_cmap("gray"))
 
     filtered_image = edge_preserve_filter(image_gray, k=k, alpha=alpha, kernel_size=11)
-else:
+else:  # this is not finished
     image = cv2.imread(image_path)
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     image_gray = grayscale(image)
     plot_img(axs[0, 0], image, "Original Image")
     plot_img(axs[0, 1], image_gray, "Grayscale Image", cmap=plt.get_cmap("gray"))
     edge_preserve_filter_rgb(image, image_gray, k=k, alpha=alpha, kernel_size=11)
-
-
-# print(np.max(image_gray))
-# print(np.min(image_gray))
-
 
 plt.tight_layout()
 plt.show()
