@@ -35,6 +35,7 @@ image_gray = image
 
 plot_img(axs[0, 0], image, "Original Image (grayscale but shown in RGB)")
 plot_img(axs[0, 1], image_gray, "Grayscale Image", cmap=plt.get_cmap("gray"))
+plot_img(axs2[0], image_gray, "Grayscale Image", cmap=plt.get_cmap("gray"))
 
 alpha = 0.5
 k = 5  #! k is 5 in the original paper
@@ -44,3 +45,5 @@ plt.tight_layout()
 plt.show()
 pickle.dump(fig, open(output_path + ".pickle", "wb"))
 fig.savefig(output_path + ".png")
+pickle.dump(fig2, open(output_path + "2.pickle", "wb"))
+fig2.savefig(output_path + "2.png")

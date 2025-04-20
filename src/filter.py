@@ -9,7 +9,7 @@ from matplotlib import pyplot as plt
 from matplotlib.pylab import f
 import numpy as np
 
-from plot_helper import plot_img, axs
+from plot_helper import plot_img, axs, axs2
 
 
 def grayscale(image):
@@ -266,6 +266,14 @@ def edge_preserve_filter(image, k=5, alpha=0.5, kernel_size=11):
 
     plot_img(
         axs[2, 3],
+        Image_o,
+        "Step 6: Auto rescaled",
+        cmap=plt.get_cmap("gray"),
+        vmin=None,
+        vmax=None,
+    )
+    plot_img(
+        axs2[1],
         Image_o,
         "Step 6: Auto rescaled",
         cmap=plt.get_cmap("gray"),

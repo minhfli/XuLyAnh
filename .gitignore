@@ -1,3 +1,5 @@
 output/*.pickle
 output/*.pdf
 output/*
+
+__pycache__/
