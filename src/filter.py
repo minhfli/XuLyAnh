@@ -120,11 +120,11 @@ def get_starting_point_v2(image, alpha=0.5, kernel_size=11):
                 mean = np.sum(patch * weight) / np.sum(weight)
                 var2 = np.sum((patch - mean) ** 2 * weight) / np.sum(weight)
                 if var2 < 0.00001:
-                    beta[i, j] = 1
+                    beta[i, j] = 10
                 else:
                     beta[i, j] = 1 / (2 * var2)
-                    if beta[i, j] > 1:
-                        beta[i, j] = 1
+                    if beta[i, j] > 10:
+                        beta[i, j] = 10
 
                 filtered_image[i, j] = np.sum(patch * weight) / np.sum(weight)
                 bar()
@@ -132,7 +132,7 @@ def get_starting_point_v2(image, alpha=0.5, kernel_size=11):
     return filtered_image, beta
 
 
-def cluster_filter_v2(image, alpha=0.5, beta=None, kernel_size=11):
+def cluster_filter_v2(image, alpha=0.5, beta=None, k=5, kernel_size=11):
     """
     edge_preserve_filter_v1 calculate weight for all pixel of the image,
     since the weight is close to 0 as the distance is far from the current pixel
@@ -144,26 +144,31 @@ def cluster_filter_v2(image, alpha=0.5, beta=None, kernel_size=11):
     filtered_image = np.zeros((height, width))
     half_kernel = kernel_size // 2
 
-    with alive_bar(height * width, title="Filtering") as bar:
-        for i in range(height):
-            for j in range(width):
-                min_x = max(0, i - half_kernel)
-                max_x = min(height, i + half_kernel + 1)
-                min_y = max(0, j - half_kernel)
-                max_y = min(width, j + half_kernel + 1)
-                patch = image[min_x:max_x, min_y:max_y]
-                weight = compute_weight_patch(
-                    i, j, min_x, max_x, min_y, max_y, alpha=alpha
-                )
+    with alive_bar(height * width * k, title="Filtering") as bar:
+        for K in range(k):
+            for i in range(height):
+                for j in range(width):
+                    min_x = max(0, i - half_kernel)
+                    max_x = min(height, i + half_kernel + 1)
+                    min_y = max(0, j - half_kernel)
+                    max_y = min(width, j + half_kernel + 1)
+                    patch = image[min_x:max_x, min_y:max_y]
+                    weight = compute_weight_patch(
+                        i, j, min_x, max_x, min_y, max_y, alpha=alpha
+                    )
 
-                tuso = np.sum(
-                    patch * weight * np.exp(-beta[i, j] * (patch - image[i, j]) ** 2)
-                )
-                mauso = np.sum(
-                    weight * np.exp(-beta[i, j] * (patch - image[i, j]) ** 2)
-                )
-                filtered_image[i, j] = tuso / mauso
-                bar()
+                    tuso = np.sum(
+                        patch
+                        * weight
+                        * np.exp(-beta[i, j] * (patch - image[i, j]) ** 2)
+                    )
+                    mauso = np.sum(
+                        weight * np.exp(-beta[i, j] * (patch - image[i, j]) ** 2)
+                    )
+                    filtered_image[i, j] = tuso / mauso
+                    bar()
+            image = filtered_image.copy()
+
     return filtered_image
 
 
