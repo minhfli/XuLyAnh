@@ -21,10 +21,12 @@ change here
 #     "./assets/MRI/ADNI_002_S_1155_274154_ACPC/ADNI_002_S_1155_274154_ACPC_150.jpg"
 # )
 # image_path = "./assets/camera_man.jpeg"
-image_path = "./assets/MRI/Test.jpg"
+# image_path = "./assets/MRI/Test.jpg"
 # image_path = "./assets/black_white.jpg"
 # image_path = "./assets/Lena_noisy.jpeg"
 # image_path = "./assets/DIP3E_Problem_Figures/CH10_Problem_Figures/FigP1007(b).tif"
+# image_path = "./assets/DIP3E_Problem_Figures/CH04_Problem_Figures/FigP0438(a).tif"
+image_path = "./assets/DIP3E_Problem_Figures/CH05_Problem_Figures/FigP0520.tif"
 # image_path = "./assets/salt_and_pepper.png"
 image_name = image_path.split("/")[-1]
 output_path = "./output/" + image_name

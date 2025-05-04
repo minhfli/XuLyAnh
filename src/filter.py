@@ -243,7 +243,7 @@ def edge_preserve_filter(image, k=5, alpha=0.5, kernel_size=11):
             filtered_image, alpha, kernel_size=kernel_size
         )
         # plot_img(axs[0, 2], starting_image, "Starting Image", cmap=plt.get_cmap("gray"))
-        filtered_image = cluster_filter_v3(
+        filtered_image = cluster_filter_v3(  # original paper have some ambiguity, but cluster_filter_v3 seems to be the right implementation
             image, starting_image, alpha, beta, kernel_size=kernel_size
         )
         if i == 0:
