@@ -160,14 +160,55 @@ def cluster_filter_v2(image, alpha=0.5, beta=None, k=5, kernel_size=11):
                     tuso = np.sum(
                         patch
                         * weight
-                        * np.exp(-beta[i, j] * (patch - image[i, j]) ** 2)
+                        * np.exp(-beta[i, j] * np.power(patch - image[i, j], 2))
                     )
                     mauso = np.sum(
-                        weight * np.exp(-beta[i, j] * (patch - image[i, j]) ** 2)
+                        weight * np.exp(-beta[i, j] * np.power(patch - image[i, j], 2))
                     )
                     filtered_image[i, j] = tuso / mauso
                     bar()
             image = filtered_image.copy()
+
+    return filtered_image
+
+
+def cluster_filter_v3(
+    image, gausian_filtered, alpha=0.5, beta=None, k=5, kernel_size=11
+):
+    """
+    edge_preserve_filter_v1 calculate weight for all pixel of the image,
+    since the weight is close to 0 as the distance is far from the current pixel
+    v2 compute weight for only the pixels close to the current pixel
+
+    """
+
+    height, width = image.shape[:2]
+    filtered_image = np.zeros((height, width))
+    half_kernel = kernel_size // 2
+
+    with alive_bar(height * width, title="Filtering") as bar:
+        for i in range(height):
+            for j in range(width):
+                min_x = max(0, i - half_kernel)
+                max_x = min(height, i + half_kernel + 1)
+                min_y = max(0, j - half_kernel)
+                max_y = min(width, j + half_kernel + 1)
+                patch = image[min_x:max_x, min_y:max_y]
+                weight = compute_weight_patch(
+                    i, j, min_x, max_x, min_y, max_y, alpha=alpha
+                )
+                y = gausian_filtered[i, j]
+                for K in range(k):
+                    tuso = np.sum(
+                        patch * weight * np.exp(-beta[i, j] * np.power(patch - y, 2))
+                    )
+                    mauso = np.sum(
+                        weight * np.exp(-beta[i, j] * np.power(patch - y, 2))
+                    )
+                    y = tuso / mauso
+                filtered_image[i, j] = y
+                bar()
+        image = filtered_image.copy()
 
     return filtered_image
 
@@ -202,8 +243,8 @@ def edge_preserve_filter(image, k=5, alpha=0.5, kernel_size=11):
             filtered_image, alpha, kernel_size=kernel_size
         )
         # plot_img(axs[0, 2], starting_image, "Starting Image", cmap=plt.get_cmap("gray"))
-        filtered_image = cluster_filter_v2(
-            starting_image, alpha, beta, kernel_size=kernel_size
+        filtered_image = cluster_filter_v3(
+            image, starting_image, alpha, beta, kernel_size=kernel_size
         )
         if i == 0:
             plot_img(
@@ -217,6 +258,77 @@ def edge_preserve_filter(image, k=5, alpha=0.5, kernel_size=11):
         axs[1, 1],
         filtered_image,
         f"Step 1: Filtered Image, k={k}",
+        cmap=plt.get_cmap("gray"),
+    )
+
+    Image_i = filtered_image
+    Image_d = image - Image_i  # signal difference
+    plot_img(
+        axs[1, 2],
+        Image_d,
+        "Step2: Signal Difference",
+        cmap=plt.get_cmap("gray"),
+        vmin=None,
+        vmax=None,
+    )
+
+    M, V = compute_local_mean_var(Image_d)
+    plot_img(
+        axs[1, 3], M, "Local Mean", cmap=plt.get_cmap("gray"), vmin=None, vmax=None
+    )
+    plot_img(
+        axs[1, 4], V, "Local Variance", cmap=plt.get_cmap("gray"), vmin=None, vmax=None
+    )
+
+    threshold = V * 2.5
+    Image_m = np.where(np.abs(Image_d - M) < threshold, Image_i, image)
+    plot_img(axs[2, 0], Image_m, "Step 3: Thresholded image", cmap=plt.get_cmap("gray"))
+
+    s = 0.5
+    Image_o = image - s * Image_m
+    plot_img(axs[2, 1], Image_o, "Step 5", cmap=plt.get_cmap("gray"))
+
+    m = np.mean(Image_o)
+    v = np.var(Image_o, mean=m)
+    lower = m - 2.5 * v
+    upper = m + 2.5 * v
+    Io_rescaled = (Image_o - lower) / (upper - lower)
+    plot_img(
+        axs[2, 2],
+        Io_rescaled,
+        "Step 6: Rescale from m-2.5v to m+2.5v",
+        cmap=plt.get_cmap("gray"),
+        vmin=0,
+        vmax=1,
+    )
+
+    plot_img(
+        axs[2, 3],
+        Image_o,
+        "Step 6: Auto rescaled",
+        cmap=plt.get_cmap("gray"),
+        vmin=None,
+        vmax=None,
+    )
+    plot_img(
+        axs2[1],
+        Image_o,
+        "Step 6: Auto rescaled",
+        cmap=plt.get_cmap("gray"),
+        vmin=None,
+        vmax=None,
+    )
+    return Image_o
+
+
+def enhance_with_gausian_filter(image, k=5, alpha=0.5, kernel_size=11):
+
+    filtered_image, beta = get_starting_point_v2(image, alpha, kernel_size=kernel_size)
+
+    plot_img(
+        axs[1, 1],
+        filtered_image,
+        f"Step 1: gausian Filtered Image",
         cmap=plt.get_cmap("gray"),
     )
 
