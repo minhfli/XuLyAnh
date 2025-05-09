@@ -8,7 +8,7 @@ import pickle
 import matplotlib.pyplot as plt
 
 from filter import *
-from plot_helper import *
+from .plot_helper import *
 from filter_rgb import *
 
 """

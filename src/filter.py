@@ -9,7 +9,7 @@ from matplotlib import pyplot as plt
 from matplotlib.pylab import f
 import numpy as np
 
-from plot_helper import plot_img, axs, axs2
+from .plot_helper import plot_img, axs, axs2
 
 
 def grayscale(image):
