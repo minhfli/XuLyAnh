@@ -9,7 +9,7 @@ from matplotlib import pyplot as plt
 from matplotlib.pylab import f
 import numpy as np
 
-from .plot_helper import plot_img, axs, axs2
+from plot_helper import plot_img, axs, axs2
 
 
 def grayscale(image):
@@ -235,7 +235,7 @@ def compute_local_mean_var(image, kernel_size=40):
     return local_mean, local_var
 
 
-def edge_preserve_filter(image, k=5, alpha=0.5, kernel_size=11):
+def enhance_with_cluster_filter(image, k=5, alpha=0.5, kernel_size=11):
 
     filtered_image = image
     for i in range(k):

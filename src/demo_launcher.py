@@ -49,20 +49,6 @@ class DemoLauncher:
             bd=3
         ).pack(pady=10)
         
-        # Tạo nút chạy demo tự động
-        tk.Button(
-            root,
-            text="Demo tự động",
-            command=self.run_auto_demo,
-            font=("Arial", 12),
-            bg="#FF9800",
-            fg="white",
-            width=20,
-            height=2,
-            relief=tk.RAISED,
-            bd=3
-        ).pack(pady=10)
-        
         # Tạo nút thoát
         tk.Button(
             root,
@@ -77,7 +63,7 @@ class DemoLauncher:
     
     def run_basic_demo(self):
         try:
-            from src.demo import EdgePreservingFilterDemo
+            from demo import EdgePreservingFilterDemo
             self.root.withdraw()  # Ẩn cửa sổ launcher
             new_root = tk.Toplevel()
             app = EdgePreservingFilterDemo(new_root)
@@ -87,22 +73,13 @@ class DemoLauncher:
     
     def run_advanced_demo(self):
         try:
-            from src.advanced_demo import AdvancedFilterDemo
+            from advanced_demo import AdvancedFilterDemo
             self.root.withdraw()  # Ẩn cửa sổ launcher
             new_root = tk.Toplevel()
             app = AdvancedFilterDemo(new_root)
             new_root.protocol("WM_DELETE_WINDOW", lambda: self.on_demo_close(new_root))
         except Exception as e:
             messagebox.showerror("Lỗi", f"Không thể khởi chạy demo nâng cao: {str(e)}")
-    
-    def run_auto_demo(self):
-        try:
-            from src.auto_demo import run_auto_demo
-            self.root.withdraw()  # Ẩn cửa sổ launcher
-            run_auto_demo(lambda: self.root.deiconify())  # Hiện lại cửa sổ launcher khi đóng demo
-        except Exception as e:
-            messagebox.showerror("Lỗi", f"Không thể khởi chạy demo tự động: {str(e)}")
-            self.root.deiconify()  # Hiện lại cửa sổ launcher
     
     def on_demo_close(self, window):
         window.destroy()

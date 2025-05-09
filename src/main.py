@@ -7,7 +7,7 @@ import pickle
 import matplotlib.pyplot as plt
 
 from filter import *
-from .plot_helper import *
+from plot_helper import *
 from filter_rgb import *
 
 """
@@ -19,9 +19,9 @@ change here
 # image_path = (
 #     "./assets/MRI/ADNI_002_S_1155_274154_ACPC/ADNI_002_S_1155_274154_ACPC_150.jpg"
 # )
-# image_path = "./assets/camera_man.jpeg"
+image_path = "../assets/camera_man.jpeg"
 # image_path = "./assets/MRI/Test.jpg"
-image_path = "./assets/black_white.jpg"
+# image_path = "./assets/black_white.jpg"
 # image_path = "./assets/Lena_noisy.jpeg"
 # image_path = "./assets/DIP3E_Problem_Figures/CH10_Problem_Figures/FigP1007(b).tif"
 # image_path = "./assets/DIP3E_Problem_Figures/CH04_Problem_Figures/FigP0438(a).tif"
@@ -44,7 +44,7 @@ plot_img(axs[0, 0], image, "Original Image (grayscale but shown in RGB)")
 plot_img(axs[0, 1], image_gray, "Grayscale Image", cmap=plt.get_cmap("gray"))
 plot_img(axs2[0], image_gray, "Grayscale Image", cmap=plt.get_cmap("gray"))
 
-cluster_enhanced_image = edge_preserve_filter(
+cluster_enhanced_image = enhance_with_cluster_filter(
     image_gray, k=k, alpha=alpha, kernel_size=11
 )
 gausian_enhanced_image = enhance_with_gausian_filter(
